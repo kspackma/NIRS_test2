@@ -17,3 +17,5 @@
 #define SEN_AFE2 10
 #define ADC_RDY 5
 #define RESETZ 8
+
+int pdCounter = 0;
