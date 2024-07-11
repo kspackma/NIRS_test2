@@ -17,7 +17,10 @@
     "files.associations": {
         "gpio.h": "c",
         "spi_master.h": "c",
-        "register_values.h": "c"
+        "register_values.h": "c",
+        "task.h": "c",
+        "register_values1.h": "c",
+        "freertos.h": "c"
     },
     "C_Cpp.errorSquiggles": "enabled"
 }

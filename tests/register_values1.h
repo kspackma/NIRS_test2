@@ -1,5 +1,5 @@
-#ifndef REGISTER_VALUES_H
-#define REGISTER_VALUES_H
+#ifndef REGISTER_VALUES1_H
+#define REGISTER_VALUES1_H
 
 // Clock Timing Values ------------------------------------------------------------------------
 #define CLK_DIV 0x07
@@ -63,4 +63,4 @@
 #define DEEP_SLEEP_STC_VAL    0x4E
 #define DEEP_SLEEP_ENDC_VAL   0x635
 
-#endif // REGISTER_VALUES_H
+#endif // REGISTER_VALUES1_H
