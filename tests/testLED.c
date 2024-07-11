@@ -1,14 +1,14 @@
-// testPD script
+// testLED script
 #include "esp_mac.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "driver/spi_master.h"
 #include "driver/gpio.h"
-#include "driver/spi_common.h"
 #include "portmacro.h"
 #include "registers.h"
 #include "register_values1.h"
 #include "esp_rom_sys.h"
+#include "sdkconfig.h"
 #include <string.h>
 #include <spi_types.h>
 
@@ -20,27 +20,32 @@
 #define ADC_RDY 5
 #define RESETZ 8
 
+#define VSPI_HOST SPI3_HOST
 
-// Initialize flags
+// Initialize flags ---------------------------------------------------------------------------
 bool useAFE1 = true;
+bool useSequence1 = true;
+int pdCount = 0;
 bool dataReady = false;
-int pdCounter = 0;
 
-// Function Prototypes
+// Function Prototypes ------------------------------------------------------------------------
+void write_LED(spi_device_handle_t handle);
 void init_pins(void);
 void setup_AFE(spi_device_handle_t handle);
 void select_AFE(bool useAFE1);
 void writeRegisterBits(spi_device_handle_t handle, uint8_t address, uint32_t value, uint32_t mask);
 uint32_t readRegisterBits(spi_device_handle_t handle, uint8_t address);
 void IRAM_ATTR onDataReady(void* arg);
+void executeSequence(spi_device_handle_t handle);
+void updateCounters(void);
 void reset_LED_times(spi_device_handle_t handle);
 void reset_PD_times(spi_device_handle_t handle);
 void reset_PD_select(spi_device_handle_t handle);
+void setGain(spi_device_handle_t handle);
 
-// Main application entry point
+// Main application entry point ---------------------------------------------------------------
 void app_main(void) {
-
-    spi_device_handle_t handle; // SPI device handle
+    spi_device_handle_t handle;  // SPI device handle
 
     // Initialize GPIO pins
     init_pins();
@@ -72,9 +77,12 @@ void app_main(void) {
     select_AFE(false);   // Select AFE2
     setup_AFE(handle);   // Setup AFE2
 
+
+
+// Main Loop ---------------------------------------------------------
+
 }
 
-// Begin Additional Functions
 // Implementation of init_pins ----------------------------------------------------------------
 void init_pins(void) {
     gpio_config_t io_conf;
@@ -107,7 +115,6 @@ void init_pins(void) {
     gpio_install_isr_service(0);
     gpio_isr_handler_add(ADC_RDY, onDataReady, NULL);  // Add ISR handler
 }
-
 // Implementation of setup_AFE ----------------------------------------------------------------
 void setup_AFE(spi_device_handle_t handle) { 
     // Write values to registers (Address, Value, Mask) 
@@ -132,7 +139,7 @@ void setup_AFE(spi_device_handle_t handle) {
     writeRegisterBits(handle, SETUP_5, 0x03 << 9, MASK_ILED4_LSB);  // LED4 current xxxx11
 
     // Set default TIA gain
-    setGain_1(handle); // Gain setting for PD1
+    setGain(handle); // Gain setting for PD1
 
     // LED, Sample, Convert times: 
     // LED 1 VALUES
@@ -160,7 +167,6 @@ void setup_AFE(spi_device_handle_t handle) {
     writeRegisterBits(handle, LED2CONVST, LED2CONVST_VAL, 0xFFFFFFFF);
     writeRegisterBits(handle, LED2CONVEND, LED2CONVEND_VAL, 0xFFFFFFFF);
 }
-
 // Implementation of select_AFE ---------------------------------------------------------------
 void select_AFE(bool useAFE1) {
     gpio_set_level(SEN_AFE1, !useAFE1); // Active low
@@ -243,4 +249,41 @@ void setGain(spi_device_handle_t handle) {
     writeRegisterBits(handle, TIA_SETUP_2, 0x00, MASK_TIA_GAIN_LSB);
     // Write 4 (20pF) to Cf register
     writeRegisterBits(handle, TIA_SETUP_2, 0x04 << 3, MASK_TIA_CF);
+}
+
+// Implementation of reset_LED_times
+void reset_LED_times(spi_device_handle_t handle) {
+    // Reset LED timing registers
+    writeRegisterBits(handle, LED1LEDSTC, 0x0, 0xFFFFFFFF);   // Reset LED 1 timing registers
+    writeRegisterBits(handle, LED1LEDENDC, 0x0, 0xFFFFFFFF);
+    writeRegisterBits(handle, LED2LEDSTC, 0x0, 0xFFFFFFFF);   // Reset LED 2 timing registers
+    writeRegisterBits(handle, LED2LEDENDC, 0x0, 0xFFFFFFFF);
+    writeRegisterBits(handle, LED3LEDSTC, 0x0, 0xFFFFFFFF);   // Reset LED 3 timing registers
+    writeRegisterBits(handle, LED3LEDENDC, 0x0, 0xFFFFFFFF);
+    writeRegisterBits(handle, LED4LEDSTC, 0x0, 0xFFFFFFFF);   // Reset LED 4 timing registers
+    writeRegisterBits(handle, LED4LEDENDC, 0x0, 0xFFFFFFFF);  
+}
+
+// Implementation of reset_PD_times
+void reset_PD_times(spi_device_handle_t handle) {
+    // Reset PD timing registers
+    writeRegisterBits(handle, TG_PD1STC, 0x0, 0xFFFFFFFF); // Reset PD 1 timing registers
+    writeRegisterBits(handle, TG_PD1ENDC, 0x0, 0xFFFFFFFF);
+    writeRegisterBits(handle, TG_PD2STC, 0x0, 0xFFFFFFFF); // Reset PD 2 timing registers
+    writeRegisterBits(handle, TG_PD2ENDC, 0x0, 0xFFFFFFFF);
+    writeRegisterBits(handle, TG_PD3STC, 0x0, 0xFFFFFFFF); // Reset PD 3 timing registers
+    writeRegisterBits(handle, TG_PD3ENDC, 0x0, 0xFFFFFFFF);     
+}
+
+// Implementation of reset_PD_select
+void reset_PD_select(spi_device_handle_t handle) {
+    // Reset PD mode select registers
+    writeRegisterBits(handle, PD_ENABLE, 0x0, MASK_DUAL_PD_ENABLE);
+    writeRegisterBits(handle, PD_ENABLE, 0x0, MASK_TRIPLE_PD_ENABLE);
+}
+
+void write_LED(spi_device_handle_t handle) {
+    reset_LED_times(handle); // Reset start and end times for all LEDs
+    writeRegisterBits(handle, LED1LEDSTC, LED1STC_VAL, 0xFFFFFFFF);
+    writeRegisterBits(handle, LED1LEDENDC, 0x22, 0xFFFFFFFF); // increased the on time from default
 }
