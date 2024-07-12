@@ -19,7 +19,8 @@
                 "C:/Users/spack/esp/v5.2.2/esp-idf/components/xtensa/esp32/include",
                 "C:/Users/spack/esp/v5.2.2/esp-idf/components/driver/spi/**",
                 "C:/Users/spack/NIRS_test2",
-                "C:/Users/spack/esp/v5.2.2/esp-idf/components/esp_common/include"
+                "C:/Users/spack/esp/v5.2.2/esp-idf/components/esp_common/include",
+                "C:/Users/spack/esp/v5.2.2/esp-idf/components/driver/uart/include"
             ],
             "browse": {
                 "path": [
