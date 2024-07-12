@@ -9,13 +9,13 @@
 #include "esp_rom_sys.h"
 #include <string.h>
 
-#define SCLK 6
-#define SDOUT 2
-#define SDIN 7
-#define SEN_AFE1 9
-#define SEN_AFE2 10
-#define ADC_RDY 5
-#define RESETZ 8
+#define SCLK 4      // Serial Clock (actual pin)
+#define SDOUT 5     // MISO (actual pin)
+#define SDIN 6      // MOSI (actual pin)
+#define SEN_AFE1 7  // CS for AFE1, active low (actual pin)
+#define SEN_AFE2 8 // CS for AFE2, active low
+#define ADC_RDY 5   // Data Ready Interrupt pin (arbitrary for now)
+#define RESETZ 10    // RESETZ pin (arbitrary for now)
 
 // Initialize flags ---------------------------------------------------------------------------
 bool useAFE1 = true;

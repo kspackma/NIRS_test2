@@ -20,7 +20,8 @@
                 "C:/Users/spack/esp/v5.2.2/esp-idf/components/driver/spi/**",
                 "C:/Users/spack/NIRS_test2",
                 "C:/Users/spack/esp/v5.2.2/esp-idf/components/esp_common/include",
-                "C:/Users/spack/esp/v5.2.2/esp-idf/components/driver/uart/include"
+                "C:/Users/spack/esp/v5.2.2/esp-idf/components/driver/uart/include",
+                "C:/Users/spack/esp/v5.2.2/esp-idf/components/soc/esp32/include/soc"
             ],
             "browse": {
                 "path": [

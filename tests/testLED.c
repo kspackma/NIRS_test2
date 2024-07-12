@@ -27,6 +27,7 @@ bool useAFE1 = true;
 bool useSequence1 = true;
 int pdCount = 0;
 bool dataReady = false;
+int cycleCount = 0;
 
 // Function Prototypes ------------------------------------------------------------------------
 void write_LED(spi_device_handle_t handle);
@@ -77,10 +78,16 @@ void app_main(void) {
     select_AFE(false);   // Select AFE2
     setup_AFE(handle);   // Setup AFE2
 
-
+    write_LED(handle);
 
 // Main Loop ---------------------------------------------------------
-
+while (1) {
+    
+    if (dataReady) {
+        cycleCount = cycleCount + 1;
+        printf("Cycle: ", cycleCount);
+    }
+}
 }
 
 // Implementation of init_pins ----------------------------------------------------------------
